@@ -22,7 +22,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    sh "docker build -t ${IMAGE_NAME}:latest ."
+                    sh "/usr/bin/docker build -t ${IMAGE_NAME}:latest ."
                 }
             }
         }
