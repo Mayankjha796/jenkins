@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        // Replace with your AWS Account ID and region
+        // Replace with your AWS Account ID and region heheh
         AWS_ACCOUNT_ID = '590183744625'
         AWS_REGION = 'ap-south-1'
         IMAGE_NAME = 'nodeapp'
