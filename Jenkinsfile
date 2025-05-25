@@ -2,11 +2,18 @@ pipeline {
     agent any
 
     environment {
-        // Replace with your AWS Account ID and region heheh
+        // AWS Config
         AWS_ACCOUNT_ID = '590183744625'
         AWS_REGION = 'ap-south-1'
         IMAGE_NAME = 'nodeapp'
         REPO = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMAGE_NAME}"
+
+        // SonarQube environment
+        SONARQUBE_ENV = 'sonar'
+    }
+
+    tools {
+        nodejs 'nodejs' // optional: if NodeJS is managed by Jenkins tools
     }
 
     stages {
@@ -18,11 +25,26 @@ pipeline {
             }
         }
 
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv("${SONARQUBE_ENV}") {
+                    script {
+                        sh """
+                        sonar-scanner \
+                        -Dsonar.projectKey=calculator \
+                        -Dsonar.sources=. \
+                        -Dsonar.host.url=${env.SONAR_HOST_URL} \
+                        -Dsonar.login=${env.SONAR_AUTH_TOKEN}
+                        """
+                    }
+                }
+            }
+        }
 
         stage('Build Docker Image') {
             steps {
                 script {
-                    sh " /usr/bin/docker build -t ${IMAGE_NAME}:latest ."
+                    sh "/usr/bin/docker build -t ${IMAGE_NAME}:latest ."
                 }
             }
         }
@@ -31,7 +53,7 @@ pipeline {
             steps {
                 script {
                     sh """
-                    aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+                    aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${REPO}
                     """
                 }
             }
